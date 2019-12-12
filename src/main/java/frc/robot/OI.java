@@ -7,11 +7,34 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
 /**
  * This class is the glue that binds the controls on the physical operator
  * interface to the commands and command groups that allow control of the robot.
  */
+import edu.wpi.first.wpilibj.XboxController;
+
 public class OI {
+  private Joystick driverJoystick = new Joystick(0);
+  private XboxController operatorGamepad = new XboxController(1);
+
+  public OI() {
+    
+  }
+
+  public double getRobotSpeed() {
+    return -driverJoystick.getRawAxis(1);
+  }
+
+  public double getRobotRotation() {
+    return driverJoystick.getRawAxis(0);
+  }
+
+  public boolean intake() {
+    int pov = operatorGamepad.getPOV();
+    return (pov == 180) || (pov == 135) || (pov == 225);
+  }
+
   //// CREATING BUTTONS
   // One type of button is a joystick button which is any button on a
   //// joystick.

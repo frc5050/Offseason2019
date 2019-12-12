@@ -6,18 +6,22 @@
 /*----------------------------------------------------------------------------*/
 
 package frc.robot.subsystems;
-import com.revrobotics.frc.CANSparkMax;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import frc.robot.Robot;
 import frc.robot.RobotMap;
+import frc.robot.commands.ArcadeDriveWithJoystick;
 
 /**
- * An example subsystem.  You can replace me with your own Subsystem.
+ * An example subsystem. You can replace me with your own Subsystem.
  */
 public class DriveTrain extends Subsystem {
-  private CANSparkMax leftMotor1 = new CANSparkMax(RobotMap.LEFT_DRIVE_1);
-  private CANSparkMax leftMotor2 = new CANSparkMax(RobotMap.LEFT_DRIVE_2);
-  private CANSparkMax rightMotor1 = new CANSparkMax(RobotMap.RIGHT_DRIVE_1);
-  private CANSparkMax rightMotor2 = new CANSparkMax(RobotMap.RIGHT_DRIVE_2);
+  private CANSparkMax leftMotor1 = new CANSparkMax(RobotMap.LEFT_DRIVE_1, MotorType.kBrushless);
+  private CANSparkMax leftMotor2 = new CANSparkMax(RobotMap.LEFT_DRIVE_2, MotorType.kBrushless);
+  private CANSparkMax rightMotor1 = new CANSparkMax(RobotMap.RIGHT_DRIVE_1, MotorType.kBrushless);
+  private CANSparkMax rightMotor2 = new CANSparkMax(RobotMap.RIGHT_DRIVE_2, MotorType.kBrushless);
 
   public DriveTrain() {
     rightMotor1.setInverted(true);
@@ -26,13 +30,48 @@ public class DriveTrain extends Subsystem {
 
   @Override
   public void initDefaultCommand() {
-    
+    setDefaultCommand(new ArcadeDriveWithJoystick());
+  }
+
+  public void drive() {
+    double speed = Robot.oi.getRobotSpeed();
+    double rotation = Robot.oi.getRobotRotation();
+
+    if (Math.abs(speed) < 0.02) {
+      speed = 0.0;
+    }
+    if (Math.abs(rotation) < 0.02) {
+      rotation = 0.0;
+    }
+
+    double maxInput = Math.copySign(Math.max(Math.abs(speed), Math.abs(rotation)), speed);
+    double leftMotorPower;
+    double rightMotorPower;
+
+    if (speed >= 0.0) {
+      if (rotation >= 0.0) {
+        leftMotorPower = maxInput;
+        rightMotorPower = speed - rotation;
+      } else {
+        leftMotorPower = speed + rotation;
+        rightMotorPower = maxInput;
+      }
+    } else {
+      if (rotation >= 0.0) {
+        leftMotorPower = speed + rotation;
+        rightMotorPower = maxInput;
+      } else {
+        leftMotorPower = maxInput;
+        rightMotorPower = speed - rotation;
+      }
+    }
+    setMotors(leftMotorPower, rightMotorPower);
   }
 
   public void setMotors(double leftSpeed, double rightSpeed) {
-    leftMotor1.setReference(leftSpeed, ControlType.kDutyCycle);
-    leftMotor2.setReference(leftSpeed, ControlType.kDutyCycle);
-    rightMotor1.setReference(rightSpeed, ControlType.kDutyCycle);
-    rightMotor2.setReference(rightSpeed, ControlType.kDutyCycle);
+    leftMotor1.set(leftSpeed);
+    leftMotor2.set(leftSpeed);
+    rightMotor1.set(rightSpeed);
+    rightMotor2.set(rightSpeed);
   }
 }
